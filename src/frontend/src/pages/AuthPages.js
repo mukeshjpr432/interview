@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import Sidebar from '../components/Sidebar';
+import Dashboard from '../components/Dashboard';
+import InterviewPage from './InterviewPage';
 import './AuthPages.css';
 
 /**
@@ -427,10 +430,10 @@ export const InterviewHistoryPage = () => {
 
 /**
  * Main AuthPages Component
- * Handles page navigation between login, signup, profile, and history
+ * Handles page navigation between all features with sidebar
  */
 export default function AuthPages() {
-  const [currentPage, setCurrentPage] = useState('login');
+  const [currentPage, setCurrentPage] = useState('dashboard');
   const { isAuthenticated, logout } = useAuth();
 
   if (!isAuthenticated) {
@@ -452,20 +455,21 @@ export default function AuthPages() {
   }
 
   return (
-    <div>
-      <nav className="top-nav">
-        <h1>Sophia AI</h1>
-        <ul>
-          <li><button onClick={() => setCurrentPage('dashboard')}>Dashboard</button></li>
-          <li><button onClick={() => setCurrentPage('profile')}>Profile</button></li>
-          <li><button onClick={() => setCurrentPage('history')}>History</button></li>
-          <li><button onClick={logout}>Logout</button></li>
-        </ul>
-      </nav>
+    <div className="app-layout">
+      <Sidebar 
+        currentPage={currentPage} 
+        onPageChange={setCurrentPage}
+        onLogout={logout}
+      />
       
-      {currentPage === 'dashboard' && <div className="dashboard">Welcome to Dashboard</div>}
-      {currentPage === 'profile' && <ProfilePage />}
-      {currentPage === 'history' && <InterviewHistoryPage />}
+      <main className="main-content">
+        {currentPage === 'dashboard' && (
+          <Dashboard onStartInterview={() => setCurrentPage('interview')} />
+        )}
+        {currentPage === 'interview' && <InterviewPage />}
+        {currentPage === 'profile' && <ProfilePage />}
+        {currentPage === 'history' && <InterviewHistoryPage />}
+      </main>
     </div>
   );
 }
