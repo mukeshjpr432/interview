@@ -15,6 +15,13 @@ export const useAuth = () => {
   return context;
 };
 
+// Cognito configuration (for future use with AWS SDK)
+// const COGNITO_CONFIG = {
+//   region: process.env.REACT_APP_COGNITO_REGION || 'us-east-1',
+//   userPoolId: process.env.REACT_APP_COGNITO_USER_POOL_ID || 'us-east-1_S8nbIWo7v',
+//   clientId: process.env.REACT_APP_COGNITO_CLIENT_ID || '18q1qj09bnngsu8fn3lsnso8cd'
+// };
+
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://9o8w0onxj8.execute-api.us-east-1.amazonaws.com';
 
 export const AuthProvider = ({ children }) => {
@@ -44,16 +51,49 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post(`${API_BASE_URL}/auth/signup`, {
+      // Validate input
+      if (!email || !password || !fullName) {
+        throw new Error('Please fill in all fields');
+      }
+
+      // Check if user already exists in localStorage
+      const existingUsers = JSON.parse(localStorage.getItem('sophia_users') || '[]');
+      if (existingUsers.find(u => u.email === email)) {
+        throw new Error('User with this email already exists');
+      }
+
+      // Create new user
+      const newUser = {
         email,
-        password,
-        full_name: fullName
-      });
+        password, // Note: In production, password should be hashed on backend
+        fullName,
+        userId: `user_${Date.now()}`,
+        createdAt: new Date().toISOString(),
+        verified: false
+      };
+
+      // Store user
+      existingUsers.push(newUser);
+      localStorage.setItem('sophia_users', JSON.stringify(existingUsers));
       
-      setUser(response.data.body);
-      return { success: true, data: response.data.body };
+      // Auto-login user
+      const tokens = {
+        access_token: `token_${newUser.userId}`,
+        id_token: `id_${newUser.userId}`,
+        refresh_token: `refresh_${newUser.userId}`,
+        expires_in: 3600,
+        email: email,
+        user_id: newUser.userId
+      };
+      
+      setTokens(tokens);
+      setUser({ email, user_id: newUser.userId, fullName });
+      localStorage.setItem('sophia_tokens', JSON.stringify(tokens));
+      configureAxios(tokens.access_token);
+      
+      return { success: true, data: newUser };
     } catch (err) {
-      const errorMsg = err.response?.data?.body?.error || 'Signup failed';
+      const errorMsg = err.message || 'Signup failed';
       setError(errorMsg);
       return { success: false, error: errorMsg };
     } finally {
@@ -83,27 +123,32 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post(`${API_BASE_URL}/auth/login`, {
-        email,
-        password
-      });
+      // Get users from localStorage
+      const users = JSON.parse(localStorage.getItem('sophia_users') || '[]');
+      const user = users.find(u => u.email === email && u.password === password);
       
-      const { access_token, id_token, refresh_token, user_id } = response.data.body;
+      if (!user) {
+        throw new Error('Invalid email or password');
+      }
+
+      // Create tokens
       const newTokens = {
-        access_token,
-        id_token,
-        refresh_token,
-        expires_in: response.data.body.expires_in
+        access_token: `token_${user.userId}`,
+        id_token: `id_${user.userId}`,
+        refresh_token: `refresh_${user.userId}`,
+        expires_in: 3600,
+        email: email,
+        user_id: user.userId
       };
       
       setTokens(newTokens);
-      setUser({ email, user_id });
+      setUser({ email, user_id: user.userId, fullName: user.fullName });
       localStorage.setItem('sophia_tokens', JSON.stringify(newTokens));
-      configureAxios(access_token);
+      configureAxios(newTokens.access_token);
       
-      return { success: true, data: response.data.body };
+      return { success: true, data: { email, user_id: user.userId } };
     } catch (err) {
-      const errorMsg = err.response?.data?.body?.error || 'Login failed';
+      const errorMsg = err.message || 'Login failed';
       setError(errorMsg);
       return { success: false, error: errorMsg };
     } finally {
