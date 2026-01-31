@@ -253,22 +253,22 @@ export const SignupPage = ({ onSuccess, onSwitchToLogin }) => {
  * Display and edit user profile
  */
 export const ProfilePage = () => {
-  const { user, getProfile, updateProfile, loading } = useAuth();
+  const { getProfile, updateProfile, loading } = useAuth();
   const [profile, setProfile] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({});
 
-  React.useEffect(() => {
-    loadProfile();
-  }, []);
-
-  const loadProfile = async () => {
+  const loadProfile = React.useCallback(async () => {
     const result = await getProfile();
     if (result.success) {
       setProfile(result.data);
       setFormData(result.data);
     }
-  };
+  }, [getProfile]);
+
+  React.useEffect(() => {
+    loadProfile();
+  }, [loadProfile]);
 
   const handleUpdate = async (e) => {
     e.preventDefault();
@@ -367,18 +367,18 @@ export const InterviewHistoryPage = () => {
   const [loading, setLoading] = useState(true);
   const { getInterviewHistory } = useAuth();
 
-  React.useEffect(() => {
-    loadHistory();
-  }, []);
-
-  const loadHistory = async () => {
+  const loadHistory = React.useCallback(async () => {
     setLoading(true);
     const result = await getInterviewHistory();
     if (result.success) {
       setHistory(result.data.interviews || []);
     }
     setLoading(false);
-  };
+  }, [getInterviewHistory]);
+
+  React.useEffect(() => {
+    loadHistory();
+  }, [loadHistory]);
 
   if (loading) {
     return <div className="loading">Loading history...</div>;
@@ -424,3 +424,48 @@ export const InterviewHistoryPage = () => {
     </div>
   );
 };
+
+/**
+ * Main AuthPages Component
+ * Handles page navigation between login, signup, profile, and history
+ */
+export default function AuthPages() {
+  const [currentPage, setCurrentPage] = useState('login');
+  const { isAuthenticated, logout } = useAuth();
+
+  if (!isAuthenticated) {
+    return (
+      <div>
+        {currentPage === 'login' ? (
+          <LoginPage 
+            onSuccess={() => setCurrentPage('dashboard')}
+            onSwitchToSignup={() => setCurrentPage('signup')}
+          />
+        ) : (
+          <SignupPage 
+            onSuccess={() => setCurrentPage('login')}
+            onSwitchToLogin={() => setCurrentPage('login')}
+          />
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <nav className="top-nav">
+        <h1>Sophia AI</h1>
+        <ul>
+          <li><button onClick={() => setCurrentPage('dashboard')}>Dashboard</button></li>
+          <li><button onClick={() => setCurrentPage('profile')}>Profile</button></li>
+          <li><button onClick={() => setCurrentPage('history')}>History</button></li>
+          <li><button onClick={logout}>Logout</button></li>
+        </ul>
+      </nav>
+      
+      {currentPage === 'dashboard' && <div className="dashboard">Welcome to Dashboard</div>}
+      {currentPage === 'profile' && <ProfilePage />}
+      {currentPage === 'history' && <InterviewHistoryPage />}
+    </div>
+  );
+}
