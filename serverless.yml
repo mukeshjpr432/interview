@@ -1,0 +1,411 @@
+service: ai-interview-coach
+frameworkVersion: '3'
+configValidationMode: error
+
+provider:
+  name: aws
+  runtime: python3.11
+  region: us-east-1
+  stage: ${opt:stage, 'dev'}
+  
+  # IAM Permissions
+  iamRoleStatements:
+    # Bedrock Invoke Model
+    - Effect: Allow
+      Action:
+        - bedrock:InvokeModel
+        - bedrock:InvokeModelWithResponseStream
+      Resource: arn:aws:bedrock:us-east-1::foundation-model/*
+    
+    # Bedrock Agents
+    - Effect: Allow
+      Action:
+        - bedrock-agent:CreateAgent
+        - bedrock-agent:UpdateAgent
+        - bedrock-agent:GetAgent
+        - bedrock-agent:CreateAgentActionGroup
+        - bedrock-agent:UpdateAgentActionGroup
+        - bedrock-agent:CreateAgentAlias
+        - bedrock-agent:UpdateAgentAlias
+        - bedrock-agent:PrepareAgent
+        - bedrock-agent-runtime:InvokeAgent
+      Resource: 
+        - arn:aws:bedrock:us-east-1:*:agent/*
+        - arn:aws:bedrock:us-east-1:*:agent-alias/*
+    
+    # Bedrock Model Customization (Fine-tuning)
+    - Effect: Allow
+      Action:
+        - bedrock:CreateModelCustomizationJob
+        - bedrock:GetModelCustomizationJob
+        - bedrock:ListCustomModels
+        - bedrock:GetCustomModel
+      Resource: '*'
+    
+    # DynamoDB Tables (Enhanced)
+    - Effect: Allow
+      Action:
+        - dynamodb:PutItem
+        - dynamodb:GetItem
+        - dynamodb:UpdateItem
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:BatchWriteItem
+      Resource:
+        - arn:aws:dynamodb:us-east-1:*:table/interview_sessions
+        - arn:aws:dynamodb:us-east-1:*:table/interview_sessions_v2
+        - arn:aws:dynamodb:us-east-1:*:table/evaluation_results
+        - arn:aws:dynamodb:us-east-1:*:table/interview_transcripts
+        - arn:aws:dynamodb:us-east-1:*:table/candidate_profiles
+        - arn:aws:dynamodb:us-east-1:*:table/agent_sessions
+        - arn:aws:dynamodb:us-east-1:*:table/agent_invocations
+        - arn:aws:dynamodb:us-east-1:*:table/fine_tuning_jobs
+        - arn:aws:dynamodb:us-east-1:*:table/it_categories
+        - arn:aws:dynamodb:us-east-1:*:table/agent_performance_metrics
+    
+    # DynamoDB Global Secondary Indexes
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+      Resource:
+        - arn:aws:dynamodb:us-east-1:*:table/interview_sessions_v2/index/*
+        - arn:aws:dynamodb:us-east-1:*:table/agent_sessions/index/*
+        - arn:aws:dynamodb:us-east-1:*:table/agent_invocations/index/*
+        - arn:aws:dynamodb:us-east-1:*:table/fine_tuning_jobs/index/*
+        - arn:aws:dynamodb:us-east-1:*:table/it_categories/index/*
+        - arn:aws:dynamodb:us-east-1:*:table/agent_performance_metrics/index/*
+    
+    # S3 for Training Data and Voice Storage
+    - Effect: Allow
+      Action:
+        - s3:PutObject
+        - s3:GetObject
+        - s3:ListBucket
+        - s3:DeleteObject
+      Resource:
+        - arn:aws:s3:::interview-coach-voice-storage
+        - arn:aws:s3:::interview-coach-voice-storage/*
+        - arn:aws:s3:::interview-coach-training-data
+        - arn:aws:s3:::interview-coach-training-data/*
+    
+    # AWS Transcribe
+    - Effect: Allow
+      Action:
+        - transcribe:StartTranscriptionJob
+        - transcribe:GetTranscriptionJob
+      Resource: '*'
+    
+    # AWS Polly
+    - Effect: Allow
+      Action:
+        - polly:SynthesizeSpeech
+      Resource: '*'
+    
+    # CloudWatch Logs
+    - Effect: Allow
+      Action:
+        - logs:CreateLogGroup
+        - logs:CreateLogStream
+        - logs:PutLogEvents
+        - logs:DescribeLogStreams
+      Resource: arn:aws:logs:us-east-1:*:log-group:/aws/lambda/*
+    
+    # Lambda Invocation (for agent action execution)
+    - Effect: Allow
+      Action:
+        - lambda:InvokeFunction
+      Resource: arn:aws:lambda:us-east-1:*:function:ai-interview-coach-dev-*
+    
+    # Cognito User Pool Management
+    - Effect: Allow
+      Action:
+        - cognito-idp:SignUp
+        - cognito-idp:ConfirmSignUp
+        - cognito-idp:InitiateAuth
+        - cognito-idp:GlobalSignOut
+        - cognito-idp:ForgotPassword
+        - cognito-idp:ConfirmForgotPassword
+        - cognito-idp:AdminGetUser
+        - cognito-idp:AdminUpdateUserAttributes
+        - cognito-idp:GetUser
+      Resource: arn:aws:cognito-idp:us-east-1:*:userpool/*
+
+  # Environment variables
+  environment:
+    BEDROCK_REGION: us-east-1
+    BEDROCK_INTERVIEWER_MODEL: anthropic.claude-3-sonnet-20240229-v1:0
+    BEDROCK_EVALUATOR_MODEL: anthropic.claude-3-opus-20240229-v1:0
+    BEDROCK_COACH_MODEL: anthropic.claude-3-opus-20240229-v1:0
+    DYNAMODB_REGION: us-east-1
+    INTERVIEWS_TABLE: interview_sessions
+    EVALUATIONS_TABLE: evaluation_results
+    TRANSCRIPTS_TABLE: interview_transcripts
+    S3_VOICE_BUCKET: interview-coach-voice-storage
+    STAGE: ${self:provider.stage}
+
+  # API Gateway
+  httpApi:
+    cors: true
+    metrics: true
+
+# Functions
+functions:
+  orchestrator:
+    handler: src/lambda/orchestrator.lambda_handler
+    timeout: 300
+    memorySize: 1024
+    description: Main orchestrator for interview flow
+    events:
+      - httpApi:
+          path: /interview/start
+          method: POST
+      - httpApi:
+          path: /interview/{id}/response
+          method: POST
+      - httpApi:
+          path: /interview/{id}/end
+          method: POST
+      - httpApi:
+          path: /interview/{id}/report
+          method: GET
+
+  voiceHandler:
+    handler: src/voice/voice_handler.lambda_voice_handler
+    timeout: 120
+    memorySize: 512
+    description: Handle voice transcription and synthesis
+    events:
+      - httpApi:
+          path: /interview/{id}/voice/transcribe
+          method: POST
+      - httpApi:
+          path: /interview/{id}/voice/synthesize
+          method: POST
+
+  # Authentication Handler - Cognito Integration
+  authHandler:
+    handler: src/auth_handlers.lambda_auth_handler
+    timeout: 30
+    memorySize: 256
+    description: Handle user authentication, signup, login, profile management
+    environment:
+      COGNITO_USER_POOL_ID: ${env:COGNITO_USER_POOL_ID}
+      COGNITO_CLIENT_ID: ${env:COGNITO_CLIENT_ID}
+      USERS_TABLE: sophia_users
+      USER_PROFILES_TABLE: sophia_user_profiles
+      INTERVIEW_HISTORY_TABLE: sophia_interview_history
+    events:
+      # Authentication endpoints
+      - httpApi:
+          path: /auth/signup
+          method: POST
+      - httpApi:
+          path: /auth/login
+          method: POST
+      - httpApi:
+          path: /auth/confirm
+          method: POST
+      - httpApi:
+          path: /auth/refresh
+          method: POST
+      - httpApi:
+          path: /auth/logout
+          method: POST
+      - httpApi:
+          path: /auth/forgot-password
+          method: POST
+      - httpApi:
+          path: /auth/reset-password
+          method: POST
+      
+      # User profile endpoints
+      - httpApi:
+          path: /profile
+          method: GET
+      - httpApi:
+          path: /profile
+          method: PUT
+      
+      # Interview history endpoints
+      - httpApi:
+          path: /interview/history
+          method: GET
+
+# Plugins
+plugins:
+  - serverless-python-requirements
+  - serverless-plugin-tracing
+  - serverless-offline
+  - serverless-dynamodb-local
+
+# Custom configurations
+custom:
+  pythonRequirements:
+    dockerizePip: false
+    layer: true
+    slim: true
+    strip: false
+    zip: true
+
+  dynamodb:
+    stages:
+      - dev
+    start:
+      port: 8000
+      inMemory: true
+      migrate: true
+      seed: true
+
+  # Offline plugin
+  serverless-offline:
+    httpPort: 3000
+    mockAwsRequestId: "local-test-request-id"
+    websocketPort: 3001
+    lambdaPort: 3002
+
+# Package settings
+package:
+  patterns:
+    - '!node_modules/**'
+    - '!.pytest_cache/**'
+    - '!.mypy_cache/**'
+    - '!.venv/**'
+    - '!.env'
+    - '!README.md'
+
+# Resources (DynamoDB tables, S3 buckets, etc.)
+resources:
+  Resources:
+    
+    # Interview Sessions Table
+    InterviewSessionsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: interview_sessions
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: interview_id
+            AttributeType: S
+          - AttributeName: start_time
+            AttributeType: S
+        KeySchema:
+          - AttributeName: interview_id
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: job_role_index
+            KeySchema:
+              - AttributeName: start_time
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+        StreamSpecification:
+          StreamViewType: NEW_AND_OLD_IMAGES
+        Tags:
+          - Key: Application
+            Value: AIInterviewCoach
+
+    # Evaluation Results Table
+    EvaluationResultsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: evaluation_results
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: interview_id
+            AttributeType: S
+          - AttributeName: timestamp
+            AttributeType: S
+        KeySchema:
+          - AttributeName: interview_id
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: timestamp_index
+            KeySchema:
+              - AttributeName: timestamp
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+        Tags:
+          - Key: Application
+            Value: AIInterviewCoach
+
+    # Interview Transcripts Table
+    InterviewTranscriptsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: interview_transcripts
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: interview_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: interview_id
+            KeyType: HASH
+        Tags:
+          - Key: Application
+            Value: AIInterviewCoach
+
+    # Candidate Profiles Table
+    CandidateProfilesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: candidate_profiles
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: candidate_id
+            AttributeType: S
+          - AttributeName: email
+            AttributeType: S
+        KeySchema:
+          - AttributeName: candidate_id
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: email_index
+            KeySchema:
+              - AttributeName: email
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+        Tags:
+          - Key: Application
+            Value: AIInterviewCoach
+
+    # S3 Bucket for Voice Storage
+    VoiceStorageBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: interview-coach-voice-storage-${self:provider.stage}
+        VersioningConfiguration:
+          Status: Enabled
+        LifecycleConfiguration:
+          Rules:
+            - Id: DeleteOldAudio
+              Status: Enabled
+              ExpirationInDays: 90
+              Prefix: audio/
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: true
+          BlockPublicPolicy: true
+          IgnorePublicAcls: true
+          RestrictPublicBuckets: true
+        Tags:
+          - Key: Application
+            Value: AIInterviewCoach
+
+  Outputs:
+    OrchestratorFunctionArn:
+      Value: !GetAtt OrchestratorLambdaFunction.Arn
+      Description: ARN of the orchestrator Lambda function
+    
+    VoiceHandlerFunctionArn:
+      Value: !GetAtt VoiceHandlerLambdaFunction.Arn
+      Description: ARN of the voice handler Lambda function
+    
+    HttpApiEndpoint:
+      Value: !Sub https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com
+      Description: HTTP API Gateway endpoint
+    
+    VoiceStorageBucketName:
+      Value: !Ref VoiceStorageBucket
+      Description: S3 bucket for voice storage

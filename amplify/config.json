@@ -1,0 +1,20 @@
+# Amplify App Settings
+[general]
+appId = ""  # Will be provided by Amplify
+envName = dev
+project = sophia-ai
+
+[auth]
+region = us-east-1
+userPoolId = us-east-1_S8nbIWo7v
+userPoolWebClientId = 18q1qj09bnngsu8fn3lsnso8cd
+
+[hosting]
+awsRegion = us-east-1
+distribution = CloudFront
+s3Bucket = sophia-interview-coach-frontend
+s3Region = us-east-1
+imageTTL = 3600
+
+[providers]
+awscloudformation = true

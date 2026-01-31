@@ -1,0 +1,6 @@
+{
+  "COGNITO_USER_POOL_ID": "us-east-1_S8nbIWo7v",
+  "COGNITO_CLIENT_ID": "18q1qj09bnngsu8fn3lsnso8cd",
+  "COGNITO_REGION": "us-east-1",
+  "API_ENDPOINT": "https://9o8w0onxj8.execute-api.us-east-1.amazonaws.com"
+}

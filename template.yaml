@@ -1,0 +1,444 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Sophia AI Interview Coach - Complete Authentication System with SAM
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 256
+    Runtime: python3.11
+    Environment:
+      Variables:
+        COGNITO_USER_POOL_ID: !Ref CognitoUserPool
+        COGNITO_CLIENT_ID: !Ref CognitoAppClient
+        USERS_TABLE: !Ref UsersTable
+        USER_PROFILES_TABLE: !Ref UserProfilesTable
+        INTERVIEW_HISTORY_TABLE: !Ref InterviewHistoryTable
+        AWS_ACCOUNT_ID: !Ref AWS::AccountId
+        AWS_REGION: !Ref AWS::Region
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Default: dev
+    Description: Environment name (dev, staging, prod)
+
+Resources:
+  # ============================================================================
+  # COGNITO USER POOL & AUTH
+  # ============================================================================
+  
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: sophia-interview-coach-users
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireUppercase: true
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+      Schema:
+        - Name: email
+          AttributeDataType: String
+          Mutable: true
+          Required: true
+        - Name: name
+          AttributeDataType: String
+          Mutable: true
+          Required: true
+        - Name: given_name
+          AttributeDataType: String
+          Mutable: true
+        - Name: family_name
+          AttributeDataType: String
+          Mutable: true
+        - Name: phone_number
+          AttributeDataType: String
+          Mutable: true
+        - Name: profile
+          AttributeDataType: String
+          Mutable: true
+      AutoVerifiedAttributes:
+        - email
+      EmailConfiguration:
+        EmailSendingAccount: COGNITO_DEFAULT
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1
+      UserAttributeUpdateSettings:
+        AttributesRequireVerificationBeforeUpdate:
+          - email
+      Tags:
+        Application: SophiaInterviewCoach
+        Environment: !Ref EnvironmentName
+        Version: '2.0'
+
+  CognitoUserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      Domain: !Sub 'sophia-interview-${AWS::AccountId}'
+      UserPoolId: !Ref CognitoUserPool
+
+  CognitoAppClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: sophia-web-app
+      UserPoolId: !Ref CognitoUserPool
+      ExplicitAuthFlows:
+        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+        - ALLOW_USER_SRP_AUTH
+      GenerateSecret: false
+      AllowedOAuthFlows:
+        - code
+        - implicit
+      AllowedOAuthScopes:
+        - phone
+        - email
+        - openid
+        - profile
+      AllowedOAuthFlowsUserPoolClient: true
+      CallbackURLs:
+        - http://localhost:3000/callback
+        - http://localhost:8000/callback
+      LogoutURLs:
+        - http://localhost:3000/logout
+        - http://localhost:8000/logout
+      PreventUserExistenceErrors: ENABLED
+      EnableTokenRevocation: true
+      AccessTokenValidity: 1
+      IdTokenValidity: 1
+      RefreshTokenValidity: 30
+      TokenValidityUnits:
+        AccessToken: hours
+        IdToken: hours
+        RefreshToken: days
+
+  # ============================================================================
+  # DYNAMODB TABLES
+  # ============================================================================
+
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: sophia_users
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: user_id
+          AttributeType: S
+        - AttributeName: created_at
+          AttributeType: N
+        - AttributeName: email
+          AttributeType: S
+      KeySchema:
+        - AttributeName: user_id
+          KeyType: HASH
+        - AttributeName: created_at
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: email-index
+          KeySchema:
+            - AttributeName: email
+              KeyType: HASH
+            - AttributeName: created_at
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      Tags:
+        - Key: Application
+          Value: SophiaInterviewCoach
+
+  UserProfilesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: sophia_user_profiles
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: user_id
+          AttributeType: S
+        - AttributeName: experience_level
+          AttributeType: S
+      KeySchema:
+        - AttributeName: user_id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: experience-level-index
+          KeySchema:
+            - AttributeName: experience_level
+              KeyType: HASH
+            - AttributeName: user_id
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      Tags:
+        - Key: Application
+          Value: SophiaInterviewCoach
+
+  InterviewHistoryTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: sophia_interview_history
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: user_id
+          AttributeType: S
+        - AttributeName: start_time
+          AttributeType: N
+        - AttributeName: category
+          AttributeType: S
+        - AttributeName: score
+          AttributeType: N
+      KeySchema:
+        - AttributeName: user_id
+          KeyType: HASH
+        - AttributeName: start_time
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: category-index
+          KeySchema:
+            - AttributeName: category
+              KeyType: HASH
+            - AttributeName: start_time
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: score-index
+          KeySchema:
+            - AttributeName: user_id
+              KeyType: HASH
+            - AttributeName: score
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      Tags:
+        - Key: Application
+          Value: SophiaInterviewCoach
+
+  # ============================================================================
+  # S3 BUCKET FOR FRONTEND
+  # ============================================================================
+
+  FrontendBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'sophia-interview-coach-${AWS::AccountId}'
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      Tags:
+        - Key: Application
+          Value: SophiaInterviewCoach
+
+  # ============================================================================
+  # LAMBDA EXECUTION ROLE
+  # ============================================================================
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: CognitoAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - cognito-idp:SignUp
+                  - cognito-idp:ConfirmSignUp
+                  - cognito-idp:InitiateAuth
+                  - cognito-idp:GlobalSignOut
+                  - cognito-idp:ForgotPassword
+                  - cognito-idp:ConfirmForgotPassword
+                  - cognito-idp:AdminGetUser
+                  - cognito-idp:AdminUpdateUserAttributes
+                  - cognito-idp:GetUser
+                Resource: !GetAtt CognitoUserPool.Arn
+        - PolicyName: DynamoDBAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:GetItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                  - dynamodb:DeleteItem
+                Resource:
+                  - !GetAtt UsersTable.Arn
+                  - !GetAtt UserProfilesTable.Arn
+                  - !GetAtt InterviewHistoryTable.Arn
+                  - !Sub '${UsersTable.Arn}/index/*'
+                  - !Sub '${UserProfilesTable.Arn}/index/*'
+                  - !Sub '${InterviewHistoryTable.Arn}/index/*'
+
+  # ============================================================================
+  # LAMBDA FUNCTIONS
+  # ============================================================================
+
+  AuthHandler:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub 'sophia-auth-${EnvironmentName}'
+      CodeUri: src/
+      Handler: auth_handlers.lambda_auth_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 30
+      MemorySize: 256
+      Events:
+        SignupEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /auth/signup
+            Method: POST
+        LoginEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /auth/login
+            Method: POST
+        ConfirmEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /auth/confirm
+            Method: POST
+        RefreshEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /auth/refresh
+            Method: POST
+        LogoutEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /auth/logout
+            Method: POST
+        ForgotPasswordEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /auth/forgot-password
+            Method: POST
+        ResetPasswordEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /auth/reset-password
+            Method: POST
+        GetProfileEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /profile
+            Method: GET
+        UpdateProfileEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /profile
+            Method: PUT
+        GetHistoryEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /interview/history
+            Method: GET
+
+  # ============================================================================
+  # API GATEWAY
+  # ============================================================================
+
+  ApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub 'sophia-interview-api-${EnvironmentName}'
+      StageName: !Ref EnvironmentName
+      TracingEnabled: true
+      MethodSettings:
+        - ResourcePath: '/*'
+          HttpMethod: '*'
+          ThrottleSettings:
+            BurstLimit: 100
+            RateLimit: 50
+          MetricsEnabled: true
+          DataTraceEnabled: true
+          LoggingLevel: INFO
+      Cors:
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        AllowHeaders: "'Content-Type,Authorization'"
+        AllowOrigin: "'*'"
+
+Outputs:
+  CognitoUserPoolId:
+    Description: Cognito User Pool ID
+    Value: !Ref CognitoUserPool
+    Export:
+      Name: !Sub '${AWS::StackName}-UserPoolId'
+
+  CognitoClientId:
+    Description: Cognito App Client ID
+    Value: !Ref CognitoAppClient
+    Export:
+      Name: !Sub '${AWS::StackName}-ClientId'
+
+  CognitoAuthDomain:
+    Description: Cognito Authentication Domain
+    Value: !Sub 'https://sophia-interview-${AWS::AccountId}.auth.${AWS::Region}.amazoncognito.com'
+    Export:
+      Name: !Sub '${AWS::StackName}-AuthDomain'
+
+  ApiEndpoint:
+    Description: API Gateway endpoint URL
+    Value: !Sub 'https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${EnvironmentName}'
+    Export:
+      Name: !Sub '${AWS::StackName}-ApiEndpoint'
+
+  UsersTableName:
+    Description: DynamoDB Users Table
+    Value: !Ref UsersTable
+    Export:
+      Name: !Sub '${AWS::StackName}-UsersTable'
+
+  UserProfilesTableName:
+    Description: DynamoDB User Profiles Table
+    Value: !Ref UserProfilesTable
+    Export:
+      Name: !Sub '${AWS::StackName}-UserProfilesTable'
+
+  InterviewHistoryTableName:
+    Description: DynamoDB Interview History Table
+    Value: !Ref InterviewHistoryTable
+    Export:
+      Name: !Sub '${AWS::StackName}-InterviewHistoryTable'
+
+  FrontendBucketName:
+    Description: S3 Bucket for Frontend
+    Value: !Ref FrontendBucket
+    Export:
+      Name: !Sub '${AWS::StackName}-FrontendBucket'
+
+  AuthHandlerFunctionArn:
+    Description: Auth Handler Lambda Function ARN
+    Value: !GetAtt AuthHandler.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-AuthHandlerArn'

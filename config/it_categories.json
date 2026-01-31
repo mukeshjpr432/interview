@@ -1,0 +1,234 @@
+{
+  "categories": {
+    "backend": {
+      "name": "Backend Development",
+      "roles": [
+        {
+          "id": "python_backend",
+          "title": "Python Backend Engineer",
+          "skills": ["Python", "Django", "FastAPI", "SQLAlchemy", "PostgreSQL", "REST APIs", "Microservices"],
+          "difficulty_levels": ["junior", "mid", "senior"]
+        },
+        {
+          "id": "java_backend",
+          "title": "Java Backend Engineer",
+          "skills": ["Java", "Spring Boot", "Hibernate", "Maven", "PostgreSQL", "REST APIs", "Microservices", "JPA"],
+          "difficulty_levels": ["junior", "mid", "senior"]
+        },
+        {
+          "id": "nodejs_backend",
+          "title": "Node.js Backend Engineer",
+          "skills": ["JavaScript", "Node.js", "Express.js", "MongoDB", "REST APIs", "Async/Await", "Microservices"],
+          "difficulty_levels": ["junior", "mid", "senior"]
+        },
+        {
+          "id": "golang_backend",
+          "title": "Go (Golang) Backend Engineer",
+          "skills": ["Go", "Gin", "Gorm", "PostgreSQL", "REST APIs", "Concurrency", "Microservices"],
+          "difficulty_levels": ["mid", "senior"]
+        }
+      ]
+    },
+    "frontend": {
+      "name": "Frontend Development",
+      "roles": [
+        {
+          "id": "react_frontend",
+          "title": "React Frontend Engineer",
+          "skills": ["React.js", "JavaScript", "TypeScript", "Redux", "CSS/SCSS", "Webpack", "Jest", "Testing Library"],
+          "difficulty_levels": ["junior", "mid", "senior"]
+        },
+        {
+          "id": "angular_frontend",
+          "title": "Angular Frontend Engineer",
+          "skills": ["Angular", "TypeScript", "RxJS", "CSS/SCSS", "Angular Material", "Jest", "E2E Testing"],
+          "difficulty_levels": ["junior", "mid", "senior"]
+        },
+        {
+          "id": "vue_frontend",
+          "title": "Vue.js Frontend Engineer",
+          "skills": ["Vue.js", "JavaScript", "TypeScript", "Vuex", "CSS/SCSS", "Jest", "Vue Test Utils"],
+          "difficulty_levels": ["junior", "mid", "senior"]
+        },
+        {
+          "id": "mobile_react_native",
+          "title": "React Native Mobile Engineer",
+          "skills": ["React Native", "JavaScript", "TypeScript", "Redux", "Native APIs", "Testing", "Performance Optimization"],
+          "difficulty_levels": ["mid", "senior"]
+        }
+      ]
+    },
+    "fullstack": {
+      "name": "Full Stack Development",
+      "roles": [
+        {
+          "id": "mern_fullstack",
+          "title": "MERN Stack Engineer",
+          "skills": ["MongoDB", "Express.js", "React.js", "Node.js", "REST APIs", "Authentication", "Deployment"],
+          "difficulty_levels": ["junior", "mid", "senior"]
+        },
+        {
+          "id": "mean_fullstack",
+          "title": "MEAN Stack Engineer",
+          "skills": ["MongoDB", "Express.js", "Angular", "Node.js", "TypeScript", "REST APIs", "RxJS"],
+          "difficulty_levels": ["mid", "senior"]
+        },
+        {
+          "id": "django_fullstack",
+          "title": "Django Full Stack Engineer",
+          "skills": ["Django", "Python", "JavaScript", "PostgreSQL", "HTML/CSS", "REST APIs", "Django ORM"],
+          "difficulty_levels": ["junior", "mid", "senior"]
+        }
+      ]
+    },
+    "devops": {
+      "name": "DevOps & Infrastructure",
+      "roles": [
+        {
+          "id": "devops_engineer",
+          "title": "DevOps Engineer",
+          "skills": ["Docker", "Kubernetes", "CI/CD", "Jenkins", "GitLab CI", "AWS/Azure", "Infrastructure as Code", "Linux"],
+          "difficulty_levels": ["mid", "senior"]
+        },
+        {
+          "id": "cloud_architect",
+          "title": "Cloud Architect (AWS/Azure/GCP)",
+          "skills": ["AWS", "Azure", "GCP", "VPC", "Load Balancing", "Auto-scaling", "Security", "Cost Optimization"],
+          "difficulty_levels": ["senior"]
+        },
+        {
+          "id": "sre_engineer",
+          "title": "Site Reliability Engineer (SRE)",
+          "skills": ["Linux", "Docker", "Kubernetes", "Monitoring", "Logging", "Infrastructure", "Automation", "Performance Tuning"],
+          "difficulty_levels": ["senior"]
+        }
+      ]
+    },
+    "data": {
+      "name": "Data & Analytics",
+      "roles": [
+        {
+          "id": "data_scientist",
+          "title": "Data Scientist",
+          "skills": ["Python", "Pandas", "NumPy", "Scikit-learn", "TensorFlow", "SQL", "Statistics", "Machine Learning"],
+          "difficulty_levels": ["mid", "senior"]
+        },
+        {
+          "id": "data_engineer",
+          "title": "Data Engineer",
+          "skills": ["Python", "SQL", "Apache Spark", "Hadoop", "ETL", "Data Warehousing", "AWS/GCP", "Cloud Data Platforms"],
+          "difficulty_levels": ["mid", "senior"]
+        },
+        {
+          "id": "ml_engineer",
+          "title": "ML Engineer",
+          "skills": ["Python", "TensorFlow", "PyTorch", "Deep Learning", "Model Deployment", "MLOps", "Cloud ML"],
+          "difficulty_levels": ["senior"]
+        },
+        {
+          "id": "analytics_engineer",
+          "title": "Analytics Engineer",
+          "skills": ["SQL", "Python", "dbt", "Data Warehouse", "Analytics", "Tableau", "Power BI", "Looker"],
+          "difficulty_levels": ["mid", "senior"]
+        }
+      ]
+    },
+    "qa": {
+      "name": "Quality Assurance & Testing",
+      "roles": [
+        {
+          "id": "qa_automation",
+          "title": "QA Automation Engineer",
+          "skills": ["Selenium", "Python", "JavaScript", "Test Frameworks", "CI/CD", "API Testing", "Performance Testing"],
+          "difficulty_levels": ["junior", "mid", "senior"]
+        },
+        {
+          "id": "qa_manual",
+          "title": "QA Manual Tester",
+          "skills": ["Test Planning", "Test Case Design", "Bug Tracking", "Agile", "SQL", "API Testing"],
+          "difficulty_levels": ["junior", "mid"]
+        },
+        {
+          "id": "performance_tester",
+          "title": "Performance & Load Testing Engineer",
+          "skills": ["JMeter", "LoadRunner", "Python", "Monitoring", "Performance Tuning", "Bottleneck Analysis"],
+          "difficulty_levels": ["mid", "senior"]
+        }
+      ]
+    },
+    "security": {
+      "name": "Security & Compliance",
+      "roles": [
+        {
+          "id": "security_engineer",
+          "title": "Security Engineer",
+          "skills": ["Networking", "Linux", "Firewalls", "Encryption", "Penetration Testing", "SIEM", "Vulnerability Assessment"],
+          "difficulty_levels": ["mid", "senior"]
+        },
+        {
+          "id": "app_security",
+          "title": "Application Security Engineer",
+          "skills": ["OWASP", "Code Review", "Threat Modeling", "Secure Coding", "Authentication", "Authorization"],
+          "difficulty_levels": ["mid", "senior"]
+        }
+      ]
+    },
+    "database": {
+      "name": "Database Administration & Design",
+      "roles": [
+        {
+          "id": "dba",
+          "title": "Database Administrator (DBA)",
+          "skills": ["SQL", "PostgreSQL", "MySQL", "Database Design", "Backup & Recovery", "Performance Tuning", "Replication"],
+          "difficulty_levels": ["mid", "senior"]
+        },
+        {
+          "id": "database_engineer",
+          "title": "Database Engineer",
+          "skills": ["SQL", "NoSQL", "MongoDB", "Cassandra", "Database Design", "Optimization", "Indexing"],
+          "difficulty_levels": ["mid", "senior"]
+        }
+      ]
+    },
+    "ai_ml": {
+      "name": "AI & Machine Learning",
+      "roles": [
+        {
+          "id": "ai_engineer",
+          "title": "AI Engineer",
+          "skills": ["Python", "TensorFlow", "PyTorch", "LLMs", "Prompt Engineering", "RAG", "Fine-tuning"],
+          "difficulty_levels": ["senior"]
+        },
+        {
+          "id": "nlp_engineer",
+          "title": "NLP Engineer",
+          "skills": ["Python", "NLP", "NLTK", "SpaCy", "Transformers", "LLMs", "Text Processing"],
+          "difficulty_levels": ["senior"]
+        },
+        {
+          "id": "cv_engineer",
+          "title": "Computer Vision Engineer",
+          "skills": ["Python", "OpenCV", "TensorFlow", "PyTorch", "Image Processing", "Deep Learning", "CNN"],
+          "difficulty_levels": ["senior"]
+        }
+      ]
+    }
+  },
+  "difficulty_mappings": {
+    "junior": {
+      "years": "0-2",
+      "focus": ["fundamentals", "basics", "problem-solving", "communication"],
+      "question_complexity": "basic"
+    },
+    "mid": {
+      "years": "2-5",
+      "focus": ["advanced_concepts", "system_design", "optimization", "best_practices"],
+      "question_complexity": "intermediate"
+    },
+    "senior": {
+      "years": "5+",
+      "focus": ["architecture", "leadership", "mentoring", "complex_problem_solving"],
+      "question_complexity": "advanced"
+    }
+  }
+}

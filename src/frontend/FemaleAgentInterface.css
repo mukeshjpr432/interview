@@ -1,0 +1,439 @@
+/**
+ * CSS for Female Agent Interface (Sophia)
+ * Real-time voice & video interview styling
+ */
+
+.sophia-interview-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+}
+
+/* Header */
+.sophia-header {
+  text-align: center;
+  color: white;
+  margin-bottom: 30px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.sophia-header h1 {
+  font-size: 2.5em;
+  margin: 10px 0;
+  font-weight: 600;
+}
+
+.sophia-header p {
+  font-size: 1.1em;
+  opacity: 0.9;
+}
+
+/* Main Interview Area */
+.sophia-main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-bottom: 30px;
+}
+
+@media (max-width: 900px) {
+  .sophia-main {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Agent Section */
+.sophia-agent-section {
+  background: white;
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.sophia-avatar {
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.sophia-avatar.speaking {
+  box-shadow: 0 0 20px rgba(245, 87, 108, 0.6);
+  animation: pulse-speaking 1s infinite;
+}
+
+.sophia-avatar.listening {
+  box-shadow: 0 0 20px rgba(240, 147, 251, 0.6);
+  animation: pulse-listening 1s infinite;
+}
+
+@keyframes pulse-speaking {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes pulse-listening {
+  0%, 100% { box-shadow: 0 0 20px rgba(240, 147, 251, 0.6); }
+  50% { box-shadow: 0 0 40px rgba(240, 147, 251, 0.9); }
+}
+
+.avatar-container {
+  color: white;
+  text-align: center;
+  font-size: 1.2em;
+  font-weight: 500;
+}
+
+/* Waveform */
+.waveform {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 60px;
+}
+
+.waveform .bar {
+  width: 4px;
+  height: 20px;
+  background: white;
+  border-radius: 2px;
+}
+
+.waveform.speaking .bar {
+  animation: wave-speaking 0.6s ease-in-out infinite;
+}
+
+.waveform.listening .bar {
+  animation: wave-listening 0.6s ease-in-out infinite;
+}
+
+@keyframes wave-speaking {
+  0%, 100% { height: 15px; }
+  50% { height: 40px; }
+}
+
+@keyframes wave-listening {
+  0%, 100% { height: 20px; }
+  50% { height: 45px; }
+}
+
+/* Status Badge */
+.sophia-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  background: #f0f0f0;
+  border-radius: 20px;
+  margin-top: 20px;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-dot.speaking {
+  background: #f5576c;
+  animation: blink 1s infinite;
+}
+
+.status-dot.listening {
+  background: #f093fb;
+  animation: blink 0.5s infinite;
+}
+
+.status-dot.idle {
+  background: #4caf50;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* Chat Section */
+.sophia-chat-section {
+  background: white;
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.message {
+  padding: 15px;
+  border-radius: 10px;
+  animation: messageSlideIn 0.3s ease-out;
+}
+
+@keyframes messageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Agent Message */
+.agent-message {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  align-self: flex-start;
+  max-width: 80%;
+  border-radius: 15px 15px 15px 0;
+}
+
+.agent-message .agent-name {
+  font-weight: 600;
+  font-size: 0.9em;
+  opacity: 0.9;
+  margin-bottom: 5px;
+}
+
+.agent-message .message-text {
+  font-size: 1em;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Candidate Message */
+.candidate-message {
+  background: #f0f0f0;
+  color: #333;
+  align-self: flex-end;
+  max-width: 80%;
+  border-radius: 15px 15px 0 15px;
+  position: relative;
+}
+
+.candidate-message .candidate-name {
+  font-weight: 600;
+  font-size: 0.9em;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.candidate-message .message-text {
+  font-size: 1em;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.recording-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: #f5576c;
+  border-radius: 50%;
+  margin-left: 10px;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* Feedback */
+.feedback-message {
+  background: #e8f5e9;
+  border-left: 4px solid #4caf50;
+  padding: 15px;
+  border-radius: 10px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.feedback-icon {
+  font-size: 1.5em;
+  margin: 0;
+}
+
+.feedback-text {
+  margin: 0;
+  color: #2e7d32;
+  font-weight: 500;
+}
+
+/* Controls */
+.sophia-controls {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 30px;
+}
+
+button {
+  padding: 15px 30px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.record-button {
+  background: white;
+  color: #667eea;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.1em;
+}
+
+.record-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.record-button.recording {
+  background: #f5576c;
+  color: white;
+  animation: pulse-button 1s infinite;
+}
+
+.recording-light {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  background: white;
+  border-radius: 50%;
+  animation: blink 0.5s infinite;
+}
+
+@keyframes pulse-button {
+  0%, 100% { box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4); }
+  50% { box-shadow: 0 4px 30px rgba(245, 87, 108, 0.8); }
+}
+
+.next-question-button {
+  background: white;
+  color: #667eea;
+}
+
+.next-question-button:hover {
+  background: #667eea;
+  color: white;
+}
+
+.help-button {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid white;
+}
+
+.help-button:hover {
+  background: white;
+  color: #667eea;
+}
+
+/* Progress */
+.sophia-progress {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.sophia-progress p {
+  margin: 0 0 10px 0;
+  color: #666;
+  font-weight: 500;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background: #e0e0e0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  transition: width 0.3s ease;
+}
+
+/* Scrollbar styling */
+.sophia-chat-section::-webkit-scrollbar {
+  width: 8px;
+}
+
+.sophia-chat-section::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.sophia-chat-section::-webkit-scrollbar-thumb {
+  background: #667eea;
+  border-radius: 10px;
+}
+
+.sophia-chat-section::-webkit-scrollbar-thumb:hover {
+  background: #764ba2;
+}
+
+/* Mobile Responsive */
+@media (max-width: 600px) {
+  .sophia-interview-container {
+    padding: 10px;
+  }
+
+  .sophia-header h1 {
+    font-size: 1.8em;
+  }
+
+  .sophia-agent-section,
+  .sophia-chat-section {
+    padding: 15px;
+  }
+
+  .sophia-avatar {
+    width: 200px;
+    height: 200px;
+  }
+
+  .message {
+    max-width: 95%;
+  }
+
+  .sophia-controls {
+    flex-direction: column;
+  }
+
+  button {
+    width: 100%;
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "Auth": {
+    "region": "us-east-1",
+    "userPoolId": "us-east-1_S8nbIWo7v",
+    "userPoolWebClientId": "18q1qj09bnngsu8fn3lsnso8cd",
+    "identityPoolId": "",
+    "identityPoolRegion": "us-east-1",
+    "identityPoolName": "SophiaInterviewPool"
+  },
+  "API": {
+    "aws_appsync_graphqlEndpoint": "",
+    "aws_appsync_region": "us-east-1",
+    "aws_appsync_authenticationType": "AWS_IAM",
+    "aws_appsync_apiKey": ""
+  },
+  "Storage": {
+    "AWSS3": {
+      "bucket": "sophia-interview-coach-frontend",
+      "region": "us-east-1",
+      "identityId": ""
+    }
+  },
+  "custom": {
+    "apiGatewayUrl": "https://9o8w0onxj8.execute-api.us-east-1.amazonaws.com"
+  }
+}

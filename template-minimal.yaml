@@ -1,0 +1,192 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Sophia AI Interview Coach - Minimal Auth System
+
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: python3.11
+
+Resources:
+  # Cognito User Pool
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: sophia-auth-users
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireUppercase: true
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+      AutoVerifiedAttributes:
+        - email
+      EmailConfiguration:
+        EmailSendingAccount: COGNITO_DEFAULT
+
+  # Cognito App Client
+  AppClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: sophia-app
+      UserPoolId: !Ref UserPool
+      ExplicitAuthFlows:
+        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+      GenerateSecret: false
+      PreventUserExistenceErrors: ENABLED
+
+  # Users Table
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: sophia_users
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: user_id
+          AttributeType: S
+        - AttributeName: created_at
+          AttributeType: N
+      KeySchema:
+        - AttributeName: user_id
+          KeyType: HASH
+        - AttributeName: created_at
+          KeyType: RANGE
+
+  # Profiles Table
+  ProfilesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: sophia_user_profiles
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: user_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: user_id
+          KeyType: HASH
+
+  # History Table
+  HistoryTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: sophia_interview_history
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: user_id
+          AttributeType: S
+        - AttributeName: start_time
+          AttributeType: N
+      KeySchema:
+        - AttributeName: user_id
+          KeyType: HASH
+        - AttributeName: start_time
+          KeyType: RANGE
+
+  # S3 Frontend Bucket
+  FrontendBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'sophia-frontend-${AWS::AccountId}'
+
+  # Lambda Execution Role
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: CognitoAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - cognito-idp:SignUp
+                  - cognito-idp:InitiateAuth
+                  - cognito-idp:GlobalSignOut
+                  - cognito-idp:GetUser
+                Resource: !GetAtt UserPool.Arn
+        - PolicyName: DynamoDBAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:GetItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:Query
+                Resource:
+                  - !GetAtt UsersTable.Arn
+                  - !GetAtt ProfilesTable.Arn
+                  - !GetAtt HistoryTable.Arn
+
+  # Auth API
+  AuthApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: dev
+      Cors:
+        AllowMethods: "'POST,GET,PUT'"
+        AllowHeaders: "'Content-Type,Authorization'"
+        AllowOrigin: "'*'"
+
+  # Auth Handler Lambda
+  AuthHandler:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: sophia-auth-handler
+      CodeUri: src/
+      Handler: auth_handlers.lambda_auth_handler
+      Role: !GetAtt LambdaRole.Arn
+      Environment:
+        Variables:
+          COGNITO_USER_POOL_ID: !Ref UserPool
+          COGNITO_CLIENT_ID: !Ref AppClient
+          USERS_TABLE: !Ref UsersTable
+          USER_PROFILES_TABLE: !Ref ProfilesTable
+          INTERVIEW_HISTORY_TABLE: !Ref HistoryTable
+      Events:
+        Signup:
+          Type: Api
+          Properties:
+            RestApiId: !Ref AuthApi
+            Path: /auth/signup
+            Method: POST
+        Login:
+          Type: Api
+          Properties:
+            RestApiId: !Ref AuthApi
+            Path: /auth/login
+            Method: POST
+        GetProfile:
+          Type: Api
+          Properties:
+            RestApiId: !Ref AuthApi
+            Path: /profile
+            Method: GET
+
+Outputs:
+  UserPoolId:
+    Value: !Ref UserPool
+    Export:
+      Name: SophiaUserPoolId
+
+  ClientId:
+    Value: !Ref AppClient
+    Export:
+      Name: SophiaClientId
+
+  ApiEndpoint:
+    Value: !Sub 'https://${AuthApi}.execute-api.${AWS::Region}.amazonaws.com/dev'
+    Export:
+      Name: SophiaApiEndpoint

@@ -1,0 +1,287 @@
+{
+  "interview_dashboard": {
+    "candidate_info": {
+      "candidate_id": "uuid",
+      "name": "string",
+      "email": "string",
+      "job_role": "Software Engineer | Data Analyst | Product Manager | Other",
+      "experience_level": "Fresher | 1-3 years | 3+ years | Manager level"
+    },
+    "interview_summary": {
+      "interview_id": "uuid",
+      "start_time": "ISO-8601",
+      "end_time": "ISO-8601",
+      "duration_minutes": 45,
+      "total_questions": 12,
+      "status": "completed | in_progress | evaluated | coached"
+    },
+    "performance_scores": {
+      "overall_score": 7.6,
+      "score_breakdown": {
+        "technical_knowledge": {
+          "score": 8.0,
+          "max": 10,
+          "percentile": 75,
+          "description": "Strong understanding of core concepts"
+        },
+        "communication_clarity": {
+          "score": 7.0,
+          "max": 10,
+          "percentile": 65,
+          "description": "Clear explanations with room for improvement"
+        },
+        "confidence_level": {
+          "score": 6.5,
+          "max": 10,
+          "percentile": 60,
+          "description": "Some hesitation in unfamiliar areas"
+        },
+        "problem_solving": {
+          "score": 7.8,
+          "max": 10,
+          "percentile": 72,
+          "description": "Good analytical thinking"
+        }
+      }
+    },
+    "readiness_assessment": {
+      "readiness_level": "Almost Ready",
+      "options": ["Ready", "Almost Ready", "Needs Improvement", "Not Ready Yet"],
+      "confidence_percentage": 75,
+      "interview_strength": "Technical foundation is solid",
+      "main_concern": "Confidence needs building"
+    },
+    "strengths": [
+      {
+        "title": "Strong system design thinking",
+        "description": "Demonstrated clear understanding of scalable architecture",
+        "impact": "high"
+      },
+      {
+        "title": "Excellent code architecture knowledge",
+        "description": "Deep understanding of design patterns and SOLID principles",
+        "impact": "high"
+      },
+      {
+        "title": "Clear explanation of concepts",
+        "description": "Well-structured responses with good examples",
+        "impact": "medium"
+      }
+    ],
+    "improvement_areas": [
+      {
+        "title": "Practical ML experience",
+        "description": "Limited real-world ML project experience",
+        "priority": "high",
+        "estimated_hours": 20
+      },
+      {
+        "title": "Confidence in unfamiliar domains",
+        "description": "Shows hesitation when facing new topics",
+        "priority": "medium",
+        "estimated_hours": 10
+      },
+      {
+        "title": "System design at scale",
+        "description": "Could improve handling of large-scale scenarios",
+        "priority": "medium",
+        "estimated_hours": 15
+      }
+    ],
+    "preparation_roadmap": {
+      "duration_days": 14,
+      "total_hours": 40,
+      "weeks": [
+        {
+          "week": 1,
+          "title": "Foundation Building",
+          "daily_schedule": [
+            {
+              "day": 1,
+              "focus": "Machine Learning Fundamentals",
+              "topics": ["Supervised Learning", "Regression & Classification"],
+              "resources": [
+                {
+                  "title": "ML Basics - Andrew Ng Course",
+                  "type": "video",
+                  "hours": 2,
+                  "url": "https://www.coursera.org/..."
+                }
+              ],
+              "practice": "Review 2 ML concepts"
+            },
+            {
+              "day": 2,
+              "focus": "Continue ML Fundamentals",
+              "topics": ["Neural Networks", "Deep Learning basics"],
+              "resources": [
+                {
+                  "title": "Neural Networks Explained",
+                  "type": "article",
+                  "hours": 1.5,
+                  "url": "https://..."
+                }
+              ],
+              "practice": "Implement simple neural network"
+            },
+            {
+              "day": 3,
+              "focus": "System Design at Scale",
+              "topics": ["Database scaling", "Caching strategies"],
+              "resources": [
+                {
+                  "title": "System Design Primer - Database",
+                  "type": "article",
+                  "hours": 2,
+                  "url": "https://github.com/donnemartin/system-design-primer"
+                }
+              ],
+              "practice": "Design a social media feed system"
+            },
+            {
+              "day": 4,
+              "focus": "Continue System Design",
+              "topics": ["Load balancing", "Microservices"],
+              "resources": [
+                {
+                  "title": "Microservices Architecture",
+                  "type": "video",
+                  "hours": 1.5,
+                  "url": "https://..."
+                }
+              ],
+              "practice": "Hands-on: Set up microservices"
+            },
+            {
+              "day": 5,
+              "focus": "Behavioral & Communication",
+              "topics": ["STAR method", "Interview storytelling"],
+              "resources": [
+                {
+                  "title": "STAR Method Guide",
+                  "type": "article",
+                  "hours": 1,
+                  "url": "https://..."
+                }
+              ],
+              "practice": "Practice 3 STAR stories"
+            },
+            {
+              "day": 6,
+              "focus": "Problem-solving drills",
+              "topics": ["LeetCode Medium problems", "Edge cases"],
+              "resources": [
+                {
+                  "title": "LeetCode Medium Level",
+                  "type": "practice",
+                  "hours": 3,
+                  "url": "https://leetcode.com"
+                }
+              ],
+              "practice": "Solve 3 medium problems"
+            },
+            {
+              "day": 7,
+              "focus": "Mock Interview #1",
+              "topics": ["Full mock interview", "Self-evaluation"],
+              "resources": [
+                {
+                  "title": "Pramp Mock Interview",
+                  "type": "practice",
+                  "hours": 2,
+                  "url": "https://pramp.com"
+                }
+              ],
+              "practice": "Full 60-minute mock interview"
+            }
+          ]
+        },
+        {
+          "week": 2,
+          "title": "Advanced & Polish",
+          "daily_schedule": [
+            {
+              "day": 8,
+              "focus": "Advanced ML Topics",
+              "topics": ["Ensemble methods", "Recommendation systems"],
+              "resources": [],
+              "practice": "Build simple recommendation system"
+            },
+            {
+              "day": 9,
+              "focus": "System Design Deep Dive",
+              "topics": ["Distributed systems", "Consistency models"],
+              "resources": [],
+              "practice": "Design e-commerce platform"
+            },
+            {
+              "day": 10,
+              "focus": "Confidence Building",
+              "topics": ["Speaking practice", "Thought verbalization"],
+              "resources": [],
+              "practice": "Record yourself explaining concepts"
+            },
+            {
+              "day": 11,
+              "focus": "Final Problem-solving",
+              "topics": ["Hard LeetCode problems", "Complex scenarios"],
+              "resources": [],
+              "practice": "Solve 2 hard problems"
+            },
+            {
+              "day": 12,
+              "focus": "Interview rehearsal",
+              "topics": ["Practice with peer", "Feedback incorporation"],
+              "resources": [],
+              "practice": "Pair interview session"
+            },
+            {
+              "day": 13,
+              "focus": "Final mock interview",
+              "topics": ["Full realistic interview", "Performance review"],
+              "resources": [],
+              "practice": "Full mock - measure improvement"
+            },
+            {
+              "day": 14,
+              "focus": "Rest & Review",
+              "topics": ["Quick review", "Confidence final check"],
+              "resources": [],
+              "practice": "Review notes, rest well"
+            }
+          ]
+        }
+      ]
+    },
+    "performance_comparison": {
+      "current_score": 7.45,
+      "previous_score": null,
+      "trend": "first_attempt",
+      "score_history": [
+        {
+          "interview_number": 1,
+          "score": 7.45,
+          "date": "2024-01-31"
+        }
+      ]
+    },
+    "quick_actions": {
+      "schedule_another_mock": {
+        "label": "Schedule Another Mock Interview",
+        "url": "/interview/new"
+      },
+      "download_report": {
+        "label": "Download Detailed Report (PDF)",
+        "url": "/api/report/pdf"
+      },
+      "view_transcript": {
+        "label": "View Full Interview Transcript",
+        "url": "/interview/transcript"
+      },
+      "schedule_coaching": {
+        "label": "Schedule 1-on-1 Coaching",
+        "url": "/coaching/schedule"
+      }
+    }
+  }
+}
