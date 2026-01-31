@@ -1,0 +1,79 @@
+# SEO and Performance Optimizations
+
+# Enable GZIP compression
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
+</IfModule>
+
+# Cache control headers
+<IfModule mod_expires.c>
+  ExpiresActive On
+  
+  # HTML files (cache for 1 day)
+  ExpiresByType text/html "access plus 1 days"
+  
+  # CSS and JavaScript (cache for 1 month)
+  ExpiresByType text/css "access plus 1 month"
+  ExpiresByType application/javascript "access plus 1 month"
+  ExpiresByType text/javascript "access plus 1 month"
+  
+  # Images (cache for 3 months)
+  ExpiresByType image/jpeg "access plus 3 months"
+  ExpiresByType image/gif "access plus 3 months"
+  ExpiresByType image/png "access plus 3 months"
+  ExpiresByType image/webp "access plus 3 months"
+  ExpiresByType image/svg+xml "access plus 3 months"
+  
+  # Fonts (cache for 1 year)
+  ExpiresByType font/ttf "access plus 1 year"
+  ExpiresByType font/otf "access plus 1 year"
+  ExpiresByType font/woff "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
+  ExpiresByType application/font-woff "access plus 1 year"
+</IfModule>
+
+# ETag headers
+<IfModule mod_headers.c>
+  Header unset ETag
+  FileETag None
+</IfModule>
+
+# Prevent hot-linking
+<FilesMatch "\.(jpg|jpeg|png|gif|webp)$">
+  <IfModule mod_headers.c>
+    Header set Cache-Control "max-age=7776000, public"
+  </IfModule>
+</FilesMatch>
+
+# Security headers for SEO
+<IfModule mod_headers.c>
+  # X-Frame-Options prevents clickjacking
+  Header set X-Frame-Options "SAMEORIGIN"
+  
+  # X-Content-Type-Options prevents MIME sniffing
+  Header set X-Content-Type-Options "nosniff"
+  
+  # X-XSS-Protection enables XSS protection
+  Header set X-XSS-Protection "1; mode=block"
+  
+  # Referrer-Policy for privacy
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# URL Rewriting for single-page application (SPA)
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  
+  # Remove .html extension from URLs
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^(.*)\.html$ /$1 [L,R=301]
+  
+  # Redirect non-www to www (optional)
+  # RewriteCond %{HTTP_HOST} ^(?!www\.)(.*)$ [NC]
+  # RewriteRule ^(.*)$ https://www.%{HTTP_HOST}/$1 [R=301,L]
+  
+  # Redirect HTTP to HTTPS
+  RewriteCond %{HTTPS} off
+  RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>

@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+Disallow: /private/
+Disallow: /admin/
+Crawl-delay: 1
+
+# Google
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+# Bing
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://main.d17w9dshcpwrvf.amplifyapp.com/sitemap.xml
